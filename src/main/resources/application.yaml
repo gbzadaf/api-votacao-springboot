@@ -1,3 +1,8 @@
 spring:
   application:
     name: votacao-api
+  profiles:
+    active: dev
+
+server:
+  port: 8080
