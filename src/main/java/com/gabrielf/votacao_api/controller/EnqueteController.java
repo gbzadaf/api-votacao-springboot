@@ -5,6 +5,7 @@ import com.gabrielf.votacao_api.dto.request.EnqueteRequest;
 import com.gabrielf.votacao_api.dto.request.VotoRequest;
 import com.gabrielf.votacao_api.dto.response.EnqueteResponse;
 import com.gabrielf.votacao_api.dto.response.ResultadoEnqueteResponse;
+import com.gabrielf.votacao_api.security.UsuarioDetails;
 import com.gabrielf.votacao_api.service.EnqueteService;
 import com.gabrielf.votacao_api.service.VotoService;
 import jakarta.validation.Valid;
@@ -14,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -28,9 +30,10 @@ public class EnqueteController {
 
     @PostMapping
     public ResponseEntity<EnqueteResponse> criar (
-            @RequestParam UUID usuarioId,
+            @AuthenticationPrincipal UsuarioDetails usuarioDetails,
             @Valid @RequestBody EnqueteRequest enqueteRequest) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(enqueteService.criar(usuarioId, enqueteRequest));
+        return ResponseEntity.status(HttpStatus.CREATED).body(enqueteService.criar(usuarioDetails.getId(),
+                enqueteRequest));
 
     }
 
@@ -49,8 +52,10 @@ public class EnqueteController {
     }
 
     @PostMapping("/{enqueteId}/votos")
-    public ResponseEntity<Void> votar (@PathVariable UUID enqueteId, @Valid @RequestBody VotoRequest request) {
-        votoService.registrarVoto(enqueteId, request);
+    public ResponseEntity<Void> votar (@PathVariable UUID enqueteId,
+                                       @AuthenticationPrincipal UsuarioDetails usuarioDetails,
+                                       @Valid @RequestBody VotoRequest request) {
+        votoService.registrarVoto(enqueteId, usuarioDetails.getId(), request);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
 
     }
@@ -62,8 +67,9 @@ public class EnqueteController {
     }
 
     @PatchMapping("/{enqueteId}/encerrar")
-    public ResponseEntity<EnqueteResponse> encerrar (@PathVariable UUID enqueteId, @RequestParam UUID usuarioId) {
-        return ResponseEntity.ok(enqueteService.encerrar(usuarioId, enqueteId));
+    public ResponseEntity<EnqueteResponse> encerrar (@PathVariable UUID enqueteId,
+                                                     @AuthenticationPrincipal UsuarioDetails usuarioDetails) {
+        return ResponseEntity.ok(enqueteService.encerrar(enqueteId, usuarioDetails.getId()));
 
     }
 

@@ -28,27 +28,27 @@ public class VotoService {
 
 
     @Transactional
-    public void registrarVoto (UUID enquetId, VotoRequest request) {
-        Enquete enquete = enqueteService.buscarEntidadePorId(enquetId);
+    public void registrarVoto (UUID enqueteId, UUID usuarioId, VotoRequest request) {
+        Enquete enquete = enqueteService.buscarEntidadePorId(enqueteId);
 
         if (enquete.getStatus() != StatusEnquete.ABERTA) {
             throw new BusinessException("Não é possível votar. A enquete está " + enquete.getStatus() + ".");
 
         }
 
-        Usuario usuario = usuarioRepository.findById(request.usuarioId())
-                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado: " + request.usuarioId()));
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado: " + usuarioId));
 
-        OpcaoVoto opcao = opcaoVotoRepository.findById(request.usuarioId())
+        OpcaoVoto opcao = opcaoVotoRepository.findById(request.opcaoId())
                 .orElseThrow(() -> new ResourceNotFoundException("Opção de voto não encontrada: " + request.opcaoId()));
 
-        if (!opcao.getEnquete().getId().equals(enquetId)) {
+        if (!opcao.getEnquete().getId().equals(enqueteId)) {
             throw new BusinessException("A opção informada não pertence a esta enquete.");
 
         }
 
         // 1ª camada, validação de aplicação, "fail fast"
-        if (votoRepository.existsByUsuarioIdAndEnqueteId(usuario.getId(), enquetId)) {
+        if (votoRepository.existsByUsuarioIdAndEnqueteId(usuario.getId(), enqueteId)) {
             throw new BusinessException("Usuário já votou nesta enquete.");
 
         }
