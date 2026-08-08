@@ -19,3 +19,7 @@ logging:
   level:
     com.votacao: INFO
     org.hibernate.SQL: WARN
+
+jwt:
+  secret: ${JWT_SECRET}
+  expiration-ms: ${JWT_EXPIRATION_MS:3600000}
